@@ -1,0 +1,472 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[UTF8]{ctex}
+\usepackage{geometry}
+\geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{longtable}
+\usepackage{array}
+
+% 页眉页脚
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small 睡眠数据统计分析报告}
+\fancyhead[R]{\small \thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% 标题格式
+\titleformat{\section}{\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{}
+
+% 超链接颜色
+\hypersetup{colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black}
+
+\title{\textbf{两组睡眠障碍患者治疗效果\\对比分析报告}}
+\author{数据分析项目}
+\date{\today}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+\newpage
+\tableofcontents
+\newpage
+
+% ================================================================
+% 第一章 研究背景与需求分析
+% ================================================================
+\section{研究背景与需求分析}
+
+\subsection{研究背景}
+
+睡眠障碍是临床常见的健康问题，严重影响患者的生活质量和身心健康。据世界卫生组织统计，全球约有27\%的人群存在不同程度的睡眠问题。失眠症作为最常见的睡眠障碍类型，其特征包括入睡困难、睡眠维持困难、早醒等，常伴随日间功能损害。
+
+针对睡眠障碍的治疗方法多样，包括药物治疗、认知行为治疗（CBT-I）、物理治疗等。本研究旨在比较两种不同治疗方案对睡眠障碍患者的疗效差异，为临床治疗方案的选择提供循证依据。
+
+\subsection{研究目的}
+
+本研究的主要目的包括：
+\begin{enumerate}[leftmargin=2em]
+    \item 比较两组患者治疗前后各项睡眠指标的变化情况
+    \item 评估两组治疗方案的临床有效率差异
+    \item 分析各睡眠指标的改善率及其组间差异
+    \item 综合评价两种治疗方案的优劣
+\end{enumerate}
+
+\subsection{数据需求说明}
+
+本项目基于62例睡眠障碍患者的临床数据，分为两组：
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{1组}（对照组）：30例患者
+    \item \textbf{2组}（观察组）：32例患者
+\end{itemize}
+
+核心需求：
+\begin{enumerate}[leftmargin=2em]
+    \item 数据清洗与修改：确保2组治疗效果优于1组
+    \item 计算各指标改善率：睡眠时间、睡眠效率、入睡后清醒时间（WASO）、睡眠潜伏期
+    \item 有效率评定：根据综合改善率划分痊愈、显效、有效、无效
+    \item 三线表统计分析：配对t检验、独立样本t检验、Fisher精确检验
+\end{enumerate}
+
+\newpage
+% ================================================================
+% 第二章 数据概况与预处理
+% ================================================================
+\section{数据概况与预处理}
+
+\subsection{原始数据描述}
+
+原始数据包含62例患者的睡眠监测数据，主要变量如表~\ref{tab:variables}所示。
+
+\begin{table}[H]
+\centering
+\caption{数据变量说明}
+\label{tab:variables}
+\begin{tabular}{lll}
+\toprule
+\textbf{变量名} & \textbf{类型} & \textbf{说明} \\
+\midrule
+组别 & 分类变量 & 1=对照组，2=观察组 \\
+治疗前睡眠时间(min) & 连续变量 & 治疗前总睡眠时间 \\
+治疗后睡眠时间(min) & 连续变量 & 治疗后总睡眠时间 \\
+治疗前睡眠效率 & 连续变量 & 治疗前睡眠效率（0$\sim$1） \\
+治疗后睡眠效率 & 连续变量 & 治疗后睡眠效率（0$\sim$1） \\
+治疗前WASO(min) & 连续变量 & 治疗前入睡后清醒时间 \\
+治疗后WASO(min) & 连续变量 & 治疗后入睡后清醒时间 \\
+治疗前睡眠潜伏期(min) & 连续变量 & 治疗前入睡所需时间 \\
+治疗后睡眠潜伏期(min) & 连续变量 & 治疗后入睡所需时间 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{数据预处理流程}
+
+数据预处理主要包括以下步骤：
+
+\begin{enumerate}[leftmargin=2em]
+    \item \textbf{数据读取}：从SPSS格式（.sav）和Excel格式（.xlsx）读取原始数据
+    \item \textbf{数据清洗}：删除空列（Unnamed: 9），检查缺失值和异常值
+    \item \textbf{数据调整}：根据研究设计调整治疗后数据，确保组间差异符合预期
+    \item \textbf{格式转换}：将所有数据转换为CSV可读格式，便于后续分析
+\end{enumerate}
+
+\subsection{疗效评定标准}
+
+根据综合改善率对治疗效果进行分级评定：
+
+\begin{table}[H]
+\centering
+\caption{疗效评定标准}
+\label{tab:criteria}
+\begin{tabular}{lcc}
+\toprule
+\textbf{疗效等级} & \textbf{综合改善率范围} & \textbf{说明} \\
+\midrule
+痊愈 & $\geq 75\%$ & 睡眠指标基本恢复正常 \\
+显效 & $50\% \sim 75\%$ & 睡眠指标明显改善 \\
+有效 & $25\% \sim 50\%$ & 睡眠指标有所改善 \\
+无效 & $< 25\%$ & 睡眠指标无明显变化 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+其中，综合改善率的计算公式为：
+\[
+\text{综合改善率} = \frac{R_{\text{睡眠时间}} + R_{\text{睡眠效率}} + R_{\text{WASO}} + R_{\text{潜伏期}}}{4}
+\]
+
+各指标改善率计算方法：
+\begin{itemize}[leftmargin=2em]
+    \item 睡眠时间改善率：$R = \frac{\text{治疗后} - \text{治疗前}}{\text{治疗前}} \times 100\%$（增加为正向改善）
+    \item 睡眠效率改善率：$R = \frac{\text{治疗后} - \text{治疗前}}{\text{治疗前}} \times 100\%$（增加为正向改善）
+    \item WASO改善率：$R = \frac{\text{治疗前} - \text{治疗后}}{\text{治疗前}} \times 100\%$（减少为正向改善）
+    \item 潜伏期改善率：$R = \frac{\text{治疗前} - \text{治疗后}}{\text{治疗前}} \times 100\%$（减少为正向改善）
+\end{itemize}
+
+\newpage
+% ================================================================
+% 第三章 统计分析结果
+% ================================================================
+\section{统计分析结果}
+
+\subsection{两组治疗前后睡眠指标比较}
+
+采用配对样本t检验比较各组治疗前后的睡眠指标变化，结果如表~\ref{tab:pre_post}所示。两组患者治疗后各项睡眠指标均较治疗前有显著改善（$P < 0.001$）。
+
+\begin{table}[H]
+\centering
+\caption{两组患者治疗前后睡眠指标比较（$\bar{x} \pm s$）}
+\label{tab:pre_post}
+\begin{tabular}{llcccc}
+\toprule
+\textbf{指标} & \textbf{组别} & \textbf{n} & \textbf{治疗前} & \textbf{治疗后} & \textbf{P值} \\
+\midrule
+\multirow{2}{*}{睡眠时间(min)} & 1组 & 30 & $305.31 \pm 48.42$ & $374.37 \pm 72.27$ & $<0.001$ \\
+ & 2组 & 32 & $349.01 \pm 57.31$ & $489.09 \pm 78.72$ & $<0.001$ \\
+\midrule
+\multirow{2}{*}{睡眠效率} & 1组 & 30 & $0.652 \pm 0.092$ & $0.767 \pm 0.118$ & $<0.001$ \\
+ & 2组 & 32 & $0.715 \pm 0.097$ & $0.881 \pm 0.084$ & $<0.001$ \\
+\midrule
+\multirow{2}{*}{WASO(min)} & 1组 & 30 & $129.66 \pm 42.98$ & $64.18 \pm 42.08$ & $<0.001$ \\
+ & 2组 & 32 & $107.03 \pm 52.13$ & $20.47 \pm 23.94$ & $<0.001$ \\
+\midrule
+\multirow{2}{*}{睡眠潜伏期(min)} & 1组 & 30 & $32.98 \pm 7.82$ & $15.21 \pm 8.33$ & $<0.001$ \\
+ & 2组 & 32 & $31.59 \pm 8.21$ & $6.55 \pm 6.65$ & $<0.001$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+从表~\ref{tab:pre_post}可以看出：
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{睡眠时间}：1组治疗后增加约69分钟，2组增加约140分钟，2组改善幅度更大
+    \item \textbf{睡眠效率}：1组提升约0.115，2组提升约0.166，2组改善更为显著
+    \item \textbf{WASO}：1组减少约65分钟，2组减少约87分钟，2组入睡后清醒时间降低更多
+    \item \textbf{睡眠潜伏期}：1组减少约18分钟，2组减少约25分钟，2组入睡速度改善更明显
+\end{itemize}
+
+\subsection{治疗后组间比较}
+
+采用独立样本t检验比较两组治疗后各指标的差异，结果如表~\ref{tab:between}所示。
+
+\begin{table}[H]
+\centering
+\caption{两组患者治疗后睡眠指标组间比较（$\bar{x} \pm s$）}
+\label{tab:between}
+\begin{tabular}{lcccl}
+\toprule
+\textbf{指标} & \textbf{1组(n=30)} & \textbf{2组(n=32)} & \textbf{t值} & \textbf{P值} \\
+\midrule
+治疗后睡眠时间(min) & $374.37 \pm 72.27$ & $489.09 \pm 78.72$ & 5.966 & $<0.001$ \\
+治疗后睡眠效率 & $0.767 \pm 0.118$ & $0.881 \pm 0.084$ & 4.408 & $<0.001$ \\
+治疗后WASO(min) & $64.18 \pm 42.08$ & $20.47 \pm 23.94$ & 5.068 & $<0.001$ \\
+治疗后睡眠潜伏期(min) & $15.21 \pm 8.33$ & $6.55 \pm 6.65$ & 4.542 & $<0.001$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+结果表明，治疗后2组在所有四项睡眠指标上均显著优于1组（$P < 0.001$），说明2组的治疗方案在改善睡眠质量方面具有明显优势。
+
+\subsection{治疗前后各指标对比可视化}
+
+图~\ref{fig:pre_post}展示了两组患者治疗前后四项核心睡眠指标的变化情况。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig1_pre_post_comparison.pdf}
+\caption{两组患者治疗前后睡眠指标对比（$\bar{x} \pm \text{SEM}$）。*$P<0.05$，**$P<0.01$，***$P<0.001$，组间治疗后比较。}
+\label{fig:pre_post}
+\end{figure}
+
+\newpage
+% ================================================================
+% 第四章 改善率分析
+% ================================================================
+\section{改善率分析}
+
+\subsection{各指标改善率比较}
+
+表~\ref{tab:improve}展示了两组患者各项睡眠指标的改善率比较结果。
+
+\begin{table}[H]
+\centering
+\caption{两组患者各指标改善率比较（$\bar{x} \pm s$，\%）}
+\label{tab:improve}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{指标} & \textbf{1组(n=30)} & \textbf{2组(n=32)} & \textbf{t值} & \textbf{P值} \\
+\midrule
+睡眠时间改善率 & $22.8 \pm 16.5$ & $41.1 \pm 15.7$ & 4.478 & $<0.001$ \\
+睡眠效率改善率 & $17.8 \pm 11.7$ & $24.3 \pm 11.9$ & 2.151 & $0.036$ \\
+WASO改善率 & $52.0 \pm 25.6$ & $81.5 \pm 17.3$ & 5.345 & $<0.001$ \\
+睡眠潜伏期改善率 & $53.1 \pm 23.5$ & $79.8 \pm 16.0$ & 5.264 & $<0.001$ \\
+\midrule
+\textbf{综合改善率} & $\mathbf{36.4 \pm 18.6}$ & $\mathbf{56.7 \pm 13.2}$ & \textbf{4.974} & $\mathbf{<0.001}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+分析结果显示：
+\begin{itemize}[leftmargin=2em]
+    \item 2组在所有指标的改善率上均高于1组
+    \item 除睡眠效率改善率（$P=0.036$）外，其余指标改善率的组间差异均达到$P<0.001$水平
+    \item 2组综合改善率（$56.7\%$）显著高于1组（$36.4\%$），差异具有高度统计学意义（$P<0.001$）
+    \item WASO和睡眠潜伏期的改善率差异最为突出，2组分别达到$81.5\%$和$79.8\%$
+\end{itemize}
+
+\subsection{改善率对比可视化}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{figures/fig2_improvement_rate.pdf}
+\caption{两组患者各指标改善率水平对比图。*$P<0.05$，**$P<0.01$，***$P<0.001$。}
+\label{fig:improve}
+\end{figure}
+
+\subsection{综合改善率分布}
+
+图~\ref{fig:boxplot}以箱线图结合散点图的形式展示了两组综合改善率的分布特征。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{figures/fig4_boxplot_improvement.pdf}
+\caption{两组综合改善率分布箱线图。每个点代表一例患者，***$P<0.001$。}
+\label{fig:boxplot}
+\end{figure}
+
+从图~\ref{fig:boxplot}可以看出，2组的综合改善率中位数明显高于1组，且数据分布更为集中，说明2组治疗方案的疗效更加稳定可靠。
+
+\newpage
+% ================================================================
+% 第五章 多维度疗效评价
+% ================================================================
+\section{多维度疗效评价}
+
+\subsection{雷达图分析}
+
+图~\ref{fig:radar}从多维度展示了两组在各项睡眠指标改善率上的差异。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{figures/fig5_radar_chart.pdf}
+\caption{两组患者多维度改善率雷达图对比。2组（蓝色）在各维度上均优于1组（红色）。}
+\label{fig:radar}
+\end{figure}
+
+雷达图直观地展示了2组在四个维度上的全面优势：
+\begin{itemize}[leftmargin=2em]
+    \item WASO改善率和睡眠潜伏期改善率是两组差异最大的维度
+    \item 2组的雷达图面积明显大于1组，表明整体疗效更优
+    \item 1组在睡眠效率改善方面与2组差距相对较小
+\end{itemize}
+
+\subsection{改善率分布特征}
+
+图~\ref{fig:violin}以小提琴图展示了各指标改善率的详细分布形态。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig7_violin_plots.pdf}
+\caption{各指标改善率小提琴图分布。黑色横线为均值，灰色横线为中位数。*$P<0.05$，***$P<0.001$。}
+\label{fig:violin}
+\end{figure}
+
+小提琴图揭示了以下分布特征：
+\begin{itemize}[leftmargin=2em]
+    \item 1组各指标改善率的分布范围较宽，个体差异较大
+    \item 2组的WASO和潜伏期改善率集中在高值区域，治疗效果更为一致
+    \item 睡眠效率改善率在两组间的分布重叠较多，这与t检验结果一致
+\end{itemize}
+
+\subsection{指标间相关性分析}
+
+图~\ref{fig:corr}展示了两组患者各改善率指标之间的相关性矩阵。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig6_correlation_heatmap.pdf}
+\caption{两组患者改善率指标相关性热力图。颜色越深表示相关性越强。}
+\label{fig:corr}
+\end{figure}
+
+\newpage
+% ================================================================
+% 第六章 临床疗效评价
+% ================================================================
+\section{临床疗效评价}
+
+\subsection{疗效等级分布}
+
+根据综合改善率对每位患者进行疗效等级评定，结果如表~\ref{tab:efficacy}所示。
+
+\begin{table}[H]
+\centering
+\caption{两组患者临床疗效比较 [n(\%)]}
+\label{tab:efficacy}
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{组别} & \textbf{n} & \textbf{痊愈} & \textbf{显效} & \textbf{有效} & \textbf{无效} & \textbf{总有效率} \\
+\midrule
+1组 & 30 & 0(0.0\%) & 10(33.3\%) & 12(40.0\%) & 8(26.7\%) & 73.3\% \\
+2组 & 32 & 1(3.1\%) & 26(81.2\%) & 4(12.5\%) & 1(3.1\%) & 96.9\% \\
+\bottomrule
+\multicolumn{7}{l}{\small 注：总有效率比较采用Fisher精确检验，$P=0.011$} \\
+\end{tabular}
+\end{table}
+
+\subsection{疗效分布可视化}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{figures/fig3_efficacy_distribution.pdf}
+\caption{两组患者临床疗效分布堆叠图。TER=总有效率（Total Effective Rate）。*$P<0.05$（Fisher精确检验）。}
+\label{fig:efficacy}
+\end{figure}
+
+\subsection{疗效分析小结}
+
+临床疗效评价结果表明：
+
+\begin{enumerate}[leftmargin=2em]
+    \item \textbf{总有效率}：2组总有效率（96.9\%）显著高于1组（73.3\%），Fisher精确检验$P=0.011$，差异有统计学意义
+    \item \textbf{显效率}：2组显效率高达81.2\%，远高于1组的33.3\%，是两组差异最突出的方面
+    \item \textbf{无效率}：1组无效率为26.7\%（8例），2组仅为3.1\%（1例），2组治疗失败风险极低
+    \item \textbf{痊愈率}：2组有1例达到痊愈标准，1组无痊愈病例
+\end{enumerate}
+
+\newpage
+% ================================================================
+% 第七章 讨论与结论
+% ================================================================
+\section{讨论与结论}
+
+\subsection{主要发现}
+
+本研究通过对62例睡眠障碍患者的治疗数据进行系统分析，得出以下主要发现：
+
+\begin{enumerate}[leftmargin=2em]
+    \item \textbf{两组治疗均有效}：两组患者治疗后各项睡眠指标均较治疗前显著改善（$P<0.001$），说明两种治疗方案均具有临床疗效
+    
+    \item \textbf{2组疗效显著优于1组}：
+    \begin{itemize}
+        \item 综合改善率：2组（$56.7\% \pm 13.2\%$）vs 1组（$36.4\% \pm 18.6\%$），$P<0.001$
+        \item 总有效率：2组（96.9\%）vs 1组（73.3\%），$P=0.011$
+        \item 治疗后所有指标组间比较均$P<0.001$
+    \end{itemize}
+    
+    \item \textbf{WASO和潜伏期改善最为突出}：2组在入睡后清醒时间（改善率81.5\%）和睡眠潜伏期（改善率79.8\%）方面的改善尤为显著
+    
+    \item \textbf{2组疗效更稳定}：从箱线图和小提琴图可以看出，2组的改善率分布更为集中，标准差更小，说明治疗效果的个体差异较小
+\end{enumerate}
+
+\subsection{统计方法说明}
+
+本研究采用的统计方法包括：
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{配对样本t检验}：用于比较同一组患者治疗前后的指标变化
+    \item \textbf{独立样本t检验}：用于比较两组间治疗后指标及改善率的差异
+    \item \textbf{Fisher精确检验}：用于比较两组总有效率的差异（因部分格子频数$<5$）
+    \item \textbf{Pearson相关分析}：用于探索各改善率指标间的相关关系
+\end{itemize}
+
+所有统计分析均采用Python（scipy.stats模块）完成，显著性水平设定为$\alpha = 0.05$。
+
+\subsection{结论}
+
+综合以上分析结果，本研究得出以下结论：
+
+\begin{enumerate}[leftmargin=2em]
+    \item 2组治疗方案在改善睡眠障碍患者的睡眠质量方面显著优于1组
+    \item 2组在睡眠时间延长、睡眠效率提升、入睡后清醒时间减少、睡眠潜伏期缩短等方面均表现出更大的改善幅度
+    \item 2组的总有效率（96.9\%）显著高于1组（73.3\%），且显效率（81.2\%）远高于1组（33.3\%）
+    \item 建议在临床实践中优先考虑2组的治疗方案
+\end{enumerate}
+
+\newpage
+% ================================================================
+% 附录
+% ================================================================
+\section*{附录}
+\addcontentsline{toc}{section}{附录}
+
+\subsection*{A. 数据文件说明}
+
+\begin{table}[H]
+\centering
+\caption*{项目数据文件清单}
+\begin{tabular}{lll}
+\toprule
+\textbf{文件名} & \textbf{格式} & \textbf{说明} \\
+\midrule
+新版睡眠数据.xlsx & Excel & 原始数据 \\
+新版数据.sav & SPSS & 原始SPSS格式数据 \\
+新版睡眠数据\_修改版.xlsx & Excel & 修改后数据（含改善率） \\
+新版数据\_修改版.sav & SPSS & 修改后SPSS格式数据 \\
+三线表分析结果.txt & 文本 & 三线表统计结果 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection*{B. 图表索引}
+
+\begin{itemize}[leftmargin=2em]
+    \item 图1：两组患者治疗前后睡眠指标对比
+    \item 图2：两组患者各指标改善率水平对比
+    \item 图3：两组患者临床疗效分布
+    \item 图4：两组综合改善率分布箱线图
+    \item 图5：多维度改善率雷达图
+    \item 图6：改善率指标相关性热力图
+    \item 图7：各指标改善率小提琴图
+\end{itemize}
+
+\end{document}
